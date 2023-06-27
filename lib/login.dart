@@ -214,6 +214,7 @@ class _LoginState extends State<Login> {
   }
 
   Future<void> getInfo(String email, String pass) async {
+    print('test');
     var allUserInfos =
         await MongoDatabase.userCollection.find({'email': email}).toList();
     var anything = allUserInfos.toString();
@@ -226,13 +227,8 @@ class _LoginState extends State<Login> {
     globals.announcetitle = item['title'];
     globals.article = item['article'];
 
-
-
-
-
     // print(therefore);
     // globals.userInfos = allUserInfos;
-
 
     // print(passController.text);
     // print(itemsuuu['pass']);

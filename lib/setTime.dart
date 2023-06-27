@@ -308,6 +308,7 @@ class _setTimeState extends State<setTime> {
       print(time);
       print(approver);
     } else {
+      print('test');
       if (dataListReady.isEmpty) {
         // print('test');
         print(globals.selectedAppointedDoctorId);
