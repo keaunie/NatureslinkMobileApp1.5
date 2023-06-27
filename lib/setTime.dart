@@ -37,7 +37,6 @@ class _setTimeState extends State<setTime> {
     return arrData;
   }
 
-
   String? timeSelected = '';
 
   bool AM = false;
@@ -69,7 +68,15 @@ class _setTimeState extends State<setTime> {
         online = true;
         onsite = false;
         datesu = true;
+        doc = true;
         PM = true;
+        globals.servicesu = 'CWD';
+
+        selectedDateController = new TextEditingController();
+        globals.objduidString = '';
+        globals.selectedAppointedDoctorName = '';
+        globals.selectedDoctor = '';
+        globals.selectedTime = '';
       });
     } else if (type == 'Physical Appointment') {
       morning();
@@ -77,18 +84,29 @@ class _setTimeState extends State<setTime> {
       onsite = true;
       datesu = true;
       AM = true;
+      globals.servicesu = '';
+      selectedDateController = new TextEditingController();
+      globals.objduidString = '';
+      globals.selectedAppointedDoctorName = '';
+      globals.selectedDoctor = '';
+      globals.selectedTime = '';
     } else {
       online = false;
       onsite = false;
       datesu = false;
       AM = false;
       PM = false;
+      selectedDateController = new TextEditingController();
+      globals.servicesu = '';
+      globals.objduidString = '';
+      globals.selectedAppointedDoctorName = '';
+      globals.selectedDoctor = '';
+      globals.selectedTime = '';
     }
   }
+
   var selectedDateController = new TextEditingController();
   DateTime selectedDate = DateTime.now();
-
-
 
   Future<void> _selectDate(BuildContext context) async {
     final DateTime? picked = await showDatePicker(
@@ -127,16 +145,16 @@ class _setTimeState extends State<setTime> {
   }
 
   Future<void> _insertAppointment(
-      M.ObjectId id,
-      String duid,
-      String uid,
-      String title,
-      String email,
-      String service,
-      String patient,
-      DateTime date,
-      String appointmentTime,
-      ) async {
+    M.ObjectId id,
+    String duid,
+    String uid,
+    String title,
+    String email,
+    String service,
+    String patient,
+    DateTime date,
+    String appointmentTime,
+  ) async {
     var formatter = DateFormat('yyyy-MM-dd');
     var selectedDatesu = formatter.format(date);
     final data = appointmentModel(
@@ -159,8 +177,6 @@ class _setTimeState extends State<setTime> {
     globals.selectedAppointedDoctorId = null;
     var result = await chatAppointments.insertCA(data);
   }
-
-
 
   Widget dateCard() => Card(
         color: Colors.white,
@@ -235,7 +251,8 @@ class _setTimeState extends State<setTime> {
     'Physical Appointment',
   ];
 
-  Future<void> checkerAppointment(String approver, DateTime date, String time) async {
+  Future<void> checkerAppointment(
+      String approver, DateTime date, String time) async {
     var dateformat = DateFormat('yyyy-MM-dd');
     var something = dateformat.format(date);
     var getinfo;
@@ -249,8 +266,8 @@ class _setTimeState extends State<setTime> {
       }).toList();
     } else {
       // print('without approver');
-      getinfo = await chatAppointments.chatAppointCollection.find(
-          {'appointmentTime': time, 'date': something.toString()}).toList();
+      // getinfo = await chatAppointments.chatAppointCollection.find(
+      //     {'appointmentTime': time, 'date': something.toString()}).toList();
     }
     // print(something);
     // print(time);
@@ -267,16 +284,34 @@ class _setTimeState extends State<setTime> {
     // print(time);
 
     String checkDate = date.toString();
+    if(afternoontime == '1:00 PM'){
+      globals.selectedTime = '1PM';
+      time = '1PM';
+    }else if(afternoontime == '2:00 PM'){
+      globals.selectedTime = '2PM';
+      time = '2PM';
+    }else if(afternoontime == '3:00 PM'){
+      globals.selectedTime = '3PM';
+      time = '3PM';
+    }else if(afternoontime == '4:00 PM'){
+      globals.selectedTime = '4PM';
+      time = '4PM';
+    }else {
+      globals.selectedTime = '5PM';
+      time = '5PM';
+    }
 
     if (checkDate.isEmpty || time.isEmpty || approver.isEmpty) {
       ScaffoldMessenger.of(context)
           .showSnackBar(SnackBar(content: Text("Please complete the form")));
+      print(checkDate);
+      print(time);
+      print(approver);
     } else {
       if (dataListReady.isEmpty) {
         // print('test');
         print(globals.selectedAppointedDoctorId);
-        if (globals.objduidString == '' ||
-            globals.objduidString == null) {
+        if (globals.objduidString == '' || globals.objduidString == null) {
           ScaffoldMessenger.of(context)
               .showSnackBar(SnackBar(content: Text("Please select a doctor")));
           // _insertAppointment(
@@ -292,43 +327,7 @@ class _setTimeState extends State<setTime> {
         } else {
           print(globals.objduidString);
           print("im here!");
-          _insertAppointment(
-              M.ObjectId(),
-              globals.objduidString!,
-              globals.objuidString!,
-              globals.titlesu!,
-              globals.email!,
-              globals.servicesu!,
-              globals.fName!,
-              globals.selectedDate!,
-              globals.selectedTime!);
-        }
-        ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-            content: Text("Appointed Schedule: " +
-                selectedDateController.text
-                    .toString()
-                    .replaceAll(RegExp(r'00:00:00.000'), '') +
-                " " +
-                globals.selectedTime!)));
-        selectedDateController = new TextEditingController();
-        globals.objduidString = '';
-        globals.selectedDate = null;
-        globals.selectedAppointedDoctorName = '';
-        globals.selectedDoctor = '';
-        globals.selectedTime = '';
-        Navigator.push(
-            context, MaterialPageRoute(builder: (context) => Home()));
-      } else {
-        // print(dataListReady);
-        final item = dataList[0];
-        if (item['approver'] == approver ||
-            item['date'] == something &&
-                item['appointmentTime'] == globals.selectedTime) {
-          ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-              content: Text("Schedule is Taken, Please choose Another Time")));
-        } else {
-          // print('test');
-          print('im here!');
+          //
           // _insertAppointment(
           //     M.ObjectId(),
           //     globals.objduidString!,
@@ -339,25 +338,47 @@ class _setTimeState extends State<setTime> {
           //     globals.fName!,
           //     globals.selectedDate!,
           //     globals.selectedTime!);
-          // ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-          //     content: Text("Appointed Schedule: " +
-          //         selectedDateController.text
-          //             .toString()
-          //             .replaceAll(RegExp(r'00:00:00.000'), '') +
-          //         " " +
-          //         globals.selectedTime!)));
-          // selectedDateController = new TextEditingController();
-          // globals.selectedDate = null;
-          // globals.selectedAppointedDoctorName = '';
-          // globals.selectedDoctor = '';
-          // globals.selectedTime = '';
-          // Navigator.push(
-          //     context, MaterialPageRoute(builder: (context) => Home()));
+          ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+              content: Text("Appointed Schedule: " +
+                  selectedDateController.text
+                      .toString()
+                      .replaceAll(RegExp(r'00:00:00.000'), '') +
+                  " " +
+                  globals.selectedTime!)));
+          selectedDateController = new TextEditingController();
+          globals.objduidString = '';
+          globals.selectedDate = null;
+          globals.selectedAppointedDoctorName = '';
+          globals.selectedDoctor = '';
+          globals.selectedTime = '';
+        }
+
+        // Navigator.push(
+        //     context, MaterialPageRoute(builder: (context) => Home()));
+      } else {
+        // print(dataListReady);
+        final item = dataList[0];
+        if (item['approver'] == approver ||
+            item['date'] == something &&
+                item['appointmentTime'] == globals.selectedTime) {
+          ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+              content: Text("Schedule is Taken, Please choose Another Time")));
+        } else {
+          //
+          // _insertAppointment(
+          //     M.ObjectId(),
+          //     globals.objduidString!,
+          //     globals.objuidString!,
+          //     globals.titlesu!,
+          //     globals.email!,
+          //     globals.servicesu!,
+          //     globals.fName!,
+          //     globals.selectedDate!,
+          //     globals.selectedTime!);
         }
       }
     }
   }
-
 
   @override
   Widget build(BuildContext context) {
@@ -410,7 +431,6 @@ class _setTimeState extends State<setTime> {
                             onChanged: (String? newValue) {
                               setState(() {
                                 appointmenttype = newValue!;
-
                                 appointmentTypesu(appointmenttype);
                                 print(appointmenttype);
                               });
@@ -498,34 +518,48 @@ class _setTimeState extends State<setTime> {
 
                       Visibility(
                         visible: PM,
-                        child: DropdownButton(
-                          alignment: Alignment.centerLeft,
-                          iconSize: 30,
-                          style: TextStyle(
-                            fontSize: 16,
-                            color: Colors.black54,
-                          ),
-                          iconEnabledColor: Colors.greenAccent,
-                          // Initial Value
-                          value: afternoontime,
-                          // Down Arrow Icon
-                          icon: const Icon(Icons.keyboard_arrow_down),
+                        child: Card(
+                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15.0)),
 
-                          // Array list of items
-                          items: PMtime.map((String items) {
-                            return DropdownMenuItem(
-                              value: items,
-                              child: Text(items),
-                            );
-                          }).toList(),
-                          // After selecting the desired option,it will
-                          // change button value to selected value
-                          onChanged: (String? newValue) {
-                            setState(() {
-                              afternoontime = newValue!;
-                              print(afternoontime);
-                            });
-                          },
+                          child: DropdownButton(
+
+                            padding: EdgeInsets.symmetric(horizontal: 100),
+
+                            alignment: Alignment.centerLeft,
+                            iconSize: 30,
+                            style: TextStyle(
+                              fontSize: 25,
+                              color: Colors.black,
+                            ),
+
+
+                            underline: Container(),
+                            iconEnabledColor: Colors.green,
+                            // Initial Value
+                            value: afternoontime,
+                            // Down Arrow Icon
+                            icon: const Icon(Icons.keyboard_arrow_down),
+
+                            // Array list of items
+                            items: PMtime.map((String items) {
+                              return DropdownMenuItem(
+                                value: items,
+                                child: Text(items,),
+                              );
+                            }).toList(),
+                            // After selecting the desired option,it will
+                            // change button value to selected value
+                            onChanged: (String? newValue) {
+                              setState(() {
+                                globals.titlesu = 'CWD - Chat With Doctor' + " " + globals.selectedTime!;
+                                // timeSelected = afternoontime;
+                                afternoontime = newValue!;
+                                print(afternoontime);
+                              });
+                            },
+                          ),
+                            elevation: 2.5,
+                            margin: EdgeInsets.all(10)
                         ),
                       ),
                       // Visibility(
@@ -671,8 +705,7 @@ class _setTimeState extends State<setTime> {
                                   elevation: 2.5,
                                   margin: EdgeInsets.all(10))
                             ],
-                          )
-                      ),
+                          )),
 
                       Visibility(
                           visible: doc,
@@ -681,7 +714,8 @@ class _setTimeState extends State<setTime> {
                               ElevatedButton(
                                 style: ButtonStyle(
                                   backgroundColor:
-                                  MaterialStateProperty.all<Color>(Colors.green),
+                                      MaterialStateProperty.all<Color>(
+                                          Colors.green),
                                 ),
                                 onPressed: () {
                                   Navigator.push(
@@ -692,26 +726,28 @@ class _setTimeState extends State<setTime> {
                                 child: Text('List of doctors'),
                               ),
                             ],
-                          )
-                      ),
+                          )),
 
                       Visibility(
                         visible: datesu,
                         child: ElevatedButton(
                           style: ButtonStyle(
                             backgroundColor:
-                            MaterialStateProperty.all<Color>(Colors.green),
+                                MaterialStateProperty.all<Color>(Colors.green),
                           ),
                           onPressed: () {
                             String checkDate = globals.selectedDate.toString();
                             // print(checkDate);
                             if (checkDate == 'null') {
                               ScaffoldMessenger.of(context).showSnackBar(
-                                  SnackBar(content: Text("Please choose date")));
+                                  SnackBar(
+                                      content: Text("Please choose date")));
                             } else {
                               globals.selectedDoctor = '';
-                              checkerAppointment(globals.selectedAppointedDoctorName!,
-                                  globals.selectedDate!, globals.selectedTime!);
+                              checkerAppointment(
+                                  globals.selectedAppointedDoctorName!,
+                                  globals.selectedDate!,
+                                  globals.selectedTime!);
                               setState(() {});
                             }
                           },

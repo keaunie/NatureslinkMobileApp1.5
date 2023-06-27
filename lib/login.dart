@@ -226,26 +226,29 @@ class _LoginState extends State<Login> {
     globals.announcetitle = item['title'];
     globals.article = item['article'];
 
-    final List<dynamic> dataList = allUserInfos;
-    final itemsuuu = dataList[0];
+
+
+
 
     // print(therefore);
     // globals.userInfos = allUserInfos;
-    var checkpassword =
-        await BCrypt.checkpw(passController.text, itemsuuu['pass']);
+
 
     // print(passController.text);
     // print(itemsuuu['pass']);
     // print(hashedPassword);
     //
     // print(checkpassword);
-    print(therefore);
-    print(checkpassword);
+    // print(therefore);
+    // print(checkpassword);
 
     if (therefore.isEmpty) {
       ScaffoldMessenger.of(context)
           .showSnackBar(SnackBar(content: Text("Wrong Email or Password")));
     } else {
+      final List<dynamic> dataList = allUserInfos;
+      final itemsuuu = dataList[0];
+      var checkpassword = await BCrypt.checkpw(passController.text, itemsuuu['pass']);
       if (checkpassword) {
         final List<dynamic> dataList = allUserInfos;
         final item = dataList[0];
